@@ -9,7 +9,8 @@ import time
 import logging
 import os, sys
 
-AZ_TOPIC = "airzone/events"
+AZ_TOPIC_STATUS = "airzone/status"
+AZ_TOPIC_ACTIONS = "airzone/actions"
 
 
 def action(args):
@@ -26,11 +27,14 @@ def action(args):
     logger.warning("successfully started the script")
 
     def on_connect(client, userdata, flags, rc):
-        client.subscribe("airzone/actions/#")
+        client.subscribe("{}/#".format(AZ_TOPIC_ACTIONS))
 
     def on_message(client, userdata, message):
         topic = message.topic
-        # TBD
+        msg = message.payload
+        aTopic = topic.replace('{}/'.format(AZ_TOPIC_ACTIONS), '')
+        if aTopic == "mode":
+            az.operation_mode = int(msg)
 
     mqttc = mqtt.Client(client_id=args.mqtt_client)
     if args.mqtt_username and args.mqtt_password:
@@ -49,12 +53,16 @@ def action(args):
         try:
             jsonStatus = az.toJSON()
             status = json.loads(jsonStatus)
-            logger.debug(status)
-            mqttc.publish('{}/mode'.format(AZ_TOPIC), payload=status['mode'], retain=True)
+            #logger.debug(status)
+            mqttc.publish('{}/mode'.format(AZ_TOPIC_STATUS), payload=status['mode'], retain=True)
             for z in status['zones']:
-                logger.debug(z)
-                topic_prefix = '{}/{}'.format(AZ_TOPIC, z['name'])
-                mqttc.publish('{}/temp'.format(topic_prefix), payload=z['temp'], retain=True)
+                #logger.debug(z)
+                topic_prefix = '{}/{}'.format(AZ_TOPIC_STATUS, z['name'])
+		# 2022-05-29 15:01:11,628 {'air_demand': 0, 'can_fullfill': 0,
+		# 'humidity': 32, 'id': 1, 'name': 'Grenier', 'temp':
+		# 23.700000762939453, 'temp_request': 29.5}
+                for s in ["air_demand", "can_fullfill", "humidity", "temp", "temp_request"]:
+                    mqttc.publish('{}/{}'.format(topic_prefix, s), payload=z[s], retain=True)
             time.sleep(60)
         except (EOFError, SystemExit, KeyboardInterrupt):
             mqttc.disconnect()

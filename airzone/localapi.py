@@ -16,6 +16,9 @@ class OperationMode(IntEnum):
     DRY = 5
     AUTO = 7
 
+    def __str__(self):
+        return '%s' % self.name
+
     @classmethod
     def _missing_(cls, value):
         return OperationMode.STOP
@@ -177,7 +180,7 @@ class Machine():
         zs = [z.toState(self.operation_mode) for z in self.zones]
         state = {
         'id': self._machine_id,
-        'mode': self.operation_mode,
+        'mode': str(self.operation_mode),
         'zones': zs,
         }
         return json.dumps(state, sort_keys=True, indent=4)
