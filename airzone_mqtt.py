@@ -15,7 +15,6 @@ AZ_TOPIC_ACTIONS = "airzone/actions"
 
 def action(args):
     extra_args = {"use_rtu_framer": args.rtuframer}
-    az = airzone.airzone_factory(args.address, args.port, args.machine, args.system, **extra_args)
 
     if 'log' in args:
         logging.basicConfig(level=logging.DEBUG, filename=args.log, format="%(asctime)s %(message)s", filemode="w")
@@ -26,6 +25,11 @@ def action(args):
 
     logger.warning("successfully started the script")
 
+    az = airzone.airzone_factory(args.address, args.port, args.machine, args.system, **extra_args)
+
+    zones = { z.name : z for z in az.zones }
+    logger.warning("Airzone zones : {}".format(zones.keys()))
+
     def on_connect(client, userdata, flags, rc):
         client.subscribe("{}/#".format(AZ_TOPIC_ACTIONS))
 
@@ -35,7 +39,17 @@ def action(args):
         aTopic = topic.replace('{}/'.format(AZ_TOPIC_ACTIONS), '')
         if aTopic == "mode":
             az.operation_mode = int(msg)
+            return
+        zone, action = aTopic.split('/')
+        if zone not in zones.keys():
+            logger.error('zone "{}" unknown'.format(zone))
+            return
+        if action == "temp":
+            logger.info('Zone "{}", setting temp point to {}'.format(zone, int(msg)))
+            zones[zone].signal_temperature_value = int(msg)
+            return
 
+    # MQTT Client init
     mqttc = mqtt.Client(client_id=args.mqtt_client)
     if args.mqtt_username and args.mqtt_password:
         logger.info('MQTT username and password provided')
