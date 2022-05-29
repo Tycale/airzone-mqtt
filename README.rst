@@ -1,3 +1,21 @@
+Airzone-mqtt
+============
+
+Quick hack/fork of https://github.com/gpulido/python-airzone in order to
+monitor/control Airzone via MQTT.
+
+
+Install
+-------
+
+cp tempsensor.service /etc/systemd/system/
+
+sudo apt-get install python-pip
+sudo python -m pip install --upgrade pip setuptools wheel
+sudo pip install -r requirements.txt
+
+-----
+
 Python control of Innobus installation through Modbus serial Gateway & local API
 ================================================================================
 

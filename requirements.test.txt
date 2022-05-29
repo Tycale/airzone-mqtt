@@ -1,6 +1,0 @@
-pyModbus
-pybase64
-importlib-metadata
-requests
-requests_mock
-Python-Deprecated

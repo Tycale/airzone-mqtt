@@ -1,0 +1,13 @@
+[Unit]
+Description=Monitor and control airzone over MQTT
+After=network-online.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python /root/airzone-mqtt/airzone_mqtt.py
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+

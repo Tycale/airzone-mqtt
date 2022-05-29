@@ -1,5 +1,6 @@
 """ Airzone Local api integration
 """
+import json
 import logging
 from enum import IntEnum
 
@@ -172,6 +173,14 @@ class Machine():
     def unique_id(self):
         return f'{str(self._api)}_{self._machine_id}'
 
+    def toJSON(self):
+        zs = [z.toState(self.operation_mode) for z in self.zones]
+        state = {
+        'id': self._machine_id,
+        'mode': self.operation_mode,
+        'zones': zs,
+        }
+        return json.dumps(state, sort_keys=True, indent=4)
 
     def __str__(self):
         zs = "\n".join([str(z) for z in self.zones])
@@ -281,6 +290,24 @@ class Zone:
         # TODO: review
         return f'{self.name}_Z{str(self._zone_id)}'
 
+
+    def toState(self, mode):
+        diff = self.local_temperature - self.signal_temperature_value
+        can_fullfill = int(
+			 (mode == OperationMode.COOLING if diff > 0 else False)
+                         or
+                         (mode == OperationMode.HEATING if diff < 0 else False)
+                       )
+        state = {
+            'air_demand': self.air_demand,
+            'can_fullfill': can_fullfill,
+            'humidity': self.room_humidity,
+            'id': self._zone_id,
+            'name': self.name,
+            'temp': self.local_temperature,
+            'temp_request': self.signal_temperature_value,
+        }
+        return state
 
     def __str__(self):
         return "Zone with id: " + str(self._zone_id) + \
