@@ -10,11 +10,18 @@ Install
 
 bash::
 
-   cp tempsensor.service /etc/systemd/system/
+   cp airzone.service /etc/systemd/system/
    sudo apt-get install python-pip
    sudo python -m pip install --upgrade pip setuptools wheel
    sudo pip install -r requirements.txt
+   sudo systemctl daemon-reload
+   sudo systemctl enable airzone
+   sudo systemctl start airzone
 
+configuration
+-------------
+
+Copy env.sample as env and modify it according your setup.
 
 -----
 

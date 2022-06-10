@@ -4,7 +4,8 @@ After=network-online.target
 
 [Service]
 Type=simple
-ExecStart=/usr/bin/python /root/airzone-mqtt/airzone_mqtt.py
+EnvironmentFile=/root/airzone-mqtt/env
+ExecStart=/usr/bin/python3 /root/airzone-mqtt/airzone_mqtt.py "${AZ_IP}" "${AZ_PORT}" "${MQTT_IP}" "${MQTT_CLIENT}" --mqtt-user "${MQTT_USER}" --mqtt-password "${MQTT_PASS}"
 Restart=always
 RestartSec=5
 
