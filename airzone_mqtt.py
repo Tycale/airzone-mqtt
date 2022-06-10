@@ -39,6 +39,7 @@ def action(args):
         aTopic = topic.replace('{}/'.format(AZ_TOPIC_ACTIONS), '')
         if aTopic == "mode":
             az.operation_mode = int(msg)
+            send_new_states()
             return
         zone, action = aTopic.split('/')
         if zone not in zones.keys():
@@ -47,7 +48,23 @@ def action(args):
         if action == "temp":
             logger.info('Zone "{}", setting temp point to {}'.format(zone, int(msg)))
             zones[zone].signal_temperature_value = int(msg)
+            send_new_states()
             return
+
+    def send_new_states():
+        az.retrieve_machine_state(update_zones=True)
+        jsonStatus = az.toJSON()
+        status = json.loads(jsonStatus)
+        #logger.debug(status)
+        mqttc.publish('{}/mode'.format(AZ_TOPIC_STATUS), payload=status['mode'], retain=True)
+        for z in status['zones']:
+            #logger.debug(z)
+            topic_prefix = '{}/{}'.format(AZ_TOPIC_STATUS, z['name'])
+	    # 2022-05-29 15:01:11,628 {'air_demand': 0, 'can_fullfill': 0,
+	    # 'humidity': 32, 'id': 1, 'name': 'Grenier', 'temp':
+	    # 23.700000762939453, 'temp_request': 29.5}
+            for s in ["air_demand", "can_fullfill", "humidity", "temp", "temp_request"]:
+                mqttc.publish('{}/{}'.format(topic_prefix, s), payload=z[s], retain=True)
 
     # MQTT Client init
     mqttc = mqtt.Client(client_id=args.mqtt_client)
@@ -65,19 +82,8 @@ def action(args):
     # Monitoring loop
     while True:
         try:
-            jsonStatus = az.toJSON()
-            status = json.loads(jsonStatus)
-            #logger.debug(status)
-            mqttc.publish('{}/mode'.format(AZ_TOPIC_STATUS), payload=status['mode'], retain=True)
-            for z in status['zones']:
-                #logger.debug(z)
-                topic_prefix = '{}/{}'.format(AZ_TOPIC_STATUS, z['name'])
-		# 2022-05-29 15:01:11,628 {'air_demand': 0, 'can_fullfill': 0,
-		# 'humidity': 32, 'id': 1, 'name': 'Grenier', 'temp':
-		# 23.700000762939453, 'temp_request': 29.5}
-                for s in ["air_demand", "can_fullfill", "humidity", "temp", "temp_request"]:
-                    mqttc.publish('{}/{}'.format(topic_prefix, s), payload=z[s], retain=True)
-            time.sleep(60)
+            send_new_states()
+            time.sleep(10)
         except (EOFError, SystemExit, KeyboardInterrupt):
             mqttc.disconnect()
             sys.exit(1)
