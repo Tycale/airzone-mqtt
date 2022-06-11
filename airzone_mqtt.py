@@ -49,19 +49,13 @@ def action(args):
             logger.info('Zone "{}", status to {}'.format(zone, int(msg)))
             if int(msg):
                 zones[zone].turn_on()
-                time.sleep(3)
-                send_new_states()
                 return
             else:
                 zones[zone].turn_off()
-                time.sleep(3)
-                send_new_states()
                 return
         if action == "temp":
             logger.info('Zone "{}", setting temp point to {}'.format(zone, float(msg)))
             zones[zone].signal_temperature_value = float(msg)
-            time.sleep(3)
-            send_new_states()
             return
 
     def send_new_states():
