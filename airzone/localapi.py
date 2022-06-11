@@ -302,6 +302,7 @@ class Zone:
                          (mode == OperationMode.HEATING if diff < 0 else False)
                        )
         state = {
+            'on': self.is_on(),
             'air_demand': self.air_demand,
             'can_fullfill': can_fullfill,
             'humidity': self.room_humidity,

@@ -45,14 +45,29 @@ def action(args):
         if zone not in zones.keys():
             logger.error('zone "{}" unknown'.format(zone))
             return
+        if action == "status":
+            logger.info('Zone "{}", status to {}'.format(zone, int(msg)))
+            if int(msg):
+                zones[zone].turn_on()
+                time.sleep(3)
+                send_new_states()
+                return
+            else:
+                zones[zone].turn_off()
+                time.sleep(3)
+                send_new_states()
+                return
         if action == "temp":
-            logger.info('Zone "{}", setting temp point to {}'.format(zone, int(msg)))
-            zones[zone].signal_temperature_value = int(msg)
+            logger.info('Zone "{}", setting temp point to {}'.format(zone, float(msg)))
+            zones[zone].signal_temperature_value = float(msg)
+            time.sleep(3)
             send_new_states()
             return
 
     def send_new_states():
-        az.retrieve_machine_state(update_zones=True)
+        az.retrieve_machine_state()
+        for z in zones:
+            zones[z].retrieve_zone_state()
         jsonStatus = az.toJSON()
         status = json.loads(jsonStatus)
         #logger.debug(status)
@@ -63,7 +78,7 @@ def action(args):
 	    # 2022-05-29 15:01:11,628 {'air_demand': 0, 'can_fullfill': 0,
 	    # 'humidity': 32, 'id': 1, 'name': 'Grenier', 'temp':
 	    # 23.700000762939453, 'temp_request': 29.5}
-            for s in ["air_demand", "can_fullfill", "humidity", "temp", "temp_request"]:
+            for s in ["on", "air_demand", "can_fullfill", "humidity", "temp", "temp_request"]:
                 mqttc.publish('{}/{}'.format(topic_prefix, s), payload=z[s], retain=True)
 
     # MQTT Client init

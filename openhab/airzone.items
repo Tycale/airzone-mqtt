@@ -1,0 +1,5 @@
+String airzone_mode "[%s]" {mqtt="<[mosquitto:airzone/status/mode:state:default:.*], >[mosquitto:airzone/actions/mode:command:*:default]"}
+
+Number airzone_thibault_temp "[%.1f]" {mqtt="<[mosquitto:airzone/status/Thibault/temp:state:default:.*]"}
+Number airzone_thibault_demand "[%.1f]" {mqtt="<[mosquitto:airzone/status/Thibault/temp_request:state:default:.*], >[mosquitto:airzone/actions/Thibault/temp:command:*:default]"}
+Number airzone_thibault_on "[%s]" {mqtt="<[mosquitto:airzone/status/Thibault/on:state:default:.*], >[mosquitto:airzone/actions/Thibault/status:command:*:default]"}

@@ -23,6 +23,11 @@ configuration
 
 Copy env.sample as env and modify it according your setup.
 
+openhab
+-------
+
+See openhab folder, note, the sample uses MQTT v1
+
 -----
 
 Python control of Innobus installation through Modbus serial Gateway & local API
